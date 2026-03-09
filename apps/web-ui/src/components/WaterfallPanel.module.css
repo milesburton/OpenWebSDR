@@ -1,0 +1,56 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.4rem 0.75rem;
+  background: #0e0e18;
+  border-bottom: 1px solid #1e2030;
+  flex-shrink: 0;
+  font-size: 0.75rem;
+}
+
+.label {
+  color: #7ac5ff;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+}
+
+.ok {
+  color: #4ade80;
+}
+
+.offline {
+  color: #f87171;
+}
+
+.meta {
+  color: #4a5060;
+  margin-left: auto;
+}
+
+.canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  image-rendering: pixelated;
+  background: #000;
+}
+
+.placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4a5060;
+  font-size: 0.9rem;
+  font-style: italic;
+}

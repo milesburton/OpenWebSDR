@@ -1,0 +1,46 @@
+{
+  "name": "Next SDR",
+  "dockerComposeFile": "docker-compose.devcontainer.yml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspace",
+
+  "features": {},
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "ms-azuretools.vscode-docker",
+        "eamodio.gitlens",
+        "bradlc.vscode-tailwindcss",
+        "vitest.explorer"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "[cpp]": {
+          "editor.defaultFormatter": "ms-vscode.cpptools"
+        },
+        "typescript.preferences.importModuleSpecifier": "relative",
+        "cmake.buildDirectory": "${workspaceFolder}/native/${input:nativeProject}/build",
+        "C_Cpp.default.cppStandard": "c++17"
+      }
+    }
+  },
+
+  "postCreateCommand": "cd /workspace && pnpm install",
+  "forwardPorts": [3000, 3001, 3002, 3003, 3004, 8080, 8888],
+  "portsAttributes": {
+    "3000": { "label": "control-api" },
+    "3001": { "label": "receiver-registry" },
+    "3002": { "label": "scheduler" },
+    "3003": { "label": "window-engine" },
+    "3004": { "label": "session-gateway" },
+    "8080": { "label": "receiver-emulator" },
+    "8888": { "label": "web-ui" }
+  },
+  "remoteUser": "vscode"
+}

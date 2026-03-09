@@ -1,0 +1,41 @@
+###############################################################################
+# RTL-SDR hardware override (Phase 4).
+# Usage: docker compose -f docker-compose.yml -f docker-compose.rtlsdr.yml up
+#
+# Requires:
+#   - An RTL-SDR device connected to the host
+#   - udev rules allowing non-root access to the device
+###############################################################################
+
+version: "3.9"
+
+services:
+  receiver-emulator:
+    # Disable the emulator when using real hardware
+    profiles:
+      - emulator-only
+
+  receiver-rtlsdr:
+    image: next-sdr/receiver-rtlsdr:local
+    container_name: next-sdr-receiver-rtlsdr
+    restart: unless-stopped
+    networks:
+      - sdr-internal
+    devices:
+      - "/dev/bus/usb:/dev/bus/usb"
+    environment:
+      REGISTRY_URL: "http://receiver-registry:3001"
+      HOST: "0.0.0.0"
+      PORT: "8081"
+      SELF_HOST: "receiver-rtlsdr"
+      CENTRE_FREQUENCY_HZ: "145000000"
+      SAMPLE_RATE_HZ: "2048000"
+      DEVICE_INDEX: "0"
+      AGC_ENABLED: "true"
+    depends_on:
+      receiver-registry:
+        condition: service_healthy
+    cap_add:
+      - SYS_RAWIO
+    security_opt:
+      - no-new-privileges:true

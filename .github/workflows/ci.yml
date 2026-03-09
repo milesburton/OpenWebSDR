@@ -1,0 +1,237 @@
+###############################################################################
+# Next SDR — CI pipeline
+#
+# Runs on every push and pull request.
+# Jobs:
+#   lint-typecheck   — TypeScript lint and type checking
+#   test-unit-ts     — TypeScript unit tests
+#   test-unit-cpp    — C++ unit tests (receiver-emulator, dsp-core)
+#   integration      — Integration tests against Docker Compose stack
+###############################################################################
+
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+
+jobs:
+
+  # ---------------------------------------------------------------------------
+  # TypeScript: lint and type check
+  # ---------------------------------------------------------------------------
+  lint-typecheck:
+    name: Lint & typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build:packages
+
+      - name: Type check
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+  # ---------------------------------------------------------------------------
+  # TypeScript: unit tests
+  # ---------------------------------------------------------------------------
+  test-unit-ts:
+    name: Unit tests (TypeScript)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build:packages
+
+      - name: Run unit tests
+        run: pnpm test:unit
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: typescript-unit
+        continue-on-error: true
+
+  # ---------------------------------------------------------------------------
+  # C++: unit tests (receiver-emulator)
+  # ---------------------------------------------------------------------------
+  test-unit-cpp-emulator:
+    name: Unit tests (C++ emulator)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build libcurl4-openssl-dev
+
+      - name: Configure
+        working-directory: native/receiver-emulator
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DBUILD_TESTS=ON \
+            -G Ninja
+
+      - name: Build
+        working-directory: native/receiver-emulator
+        run: cmake --build build --parallel
+
+      - name: Run tests
+        working-directory: native/receiver-emulator/build
+        run: ctest --output-on-failure --timeout 60
+
+  # ---------------------------------------------------------------------------
+  # C++: unit tests (dsp-core)
+  # ---------------------------------------------------------------------------
+  test-unit-cpp-dsp:
+    name: Unit tests (C++ DSP)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build
+
+      - name: Configure
+        working-directory: native/dsp-core
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DBUILD_TESTS=ON \
+            -G Ninja
+
+      - name: Build
+        working-directory: native/dsp-core
+        run: cmake --build build --parallel
+
+      - name: Run tests
+        working-directory: native/dsp-core/build
+        run: ctest --output-on-failure --timeout 60
+
+  # ---------------------------------------------------------------------------
+  # Docker: build all images
+  # ---------------------------------------------------------------------------
+  docker-build:
+    name: Docker build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build receiver-emulator image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/images/Dockerfile.receiver-emulator
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ---------------------------------------------------------------------------
+  # Integration tests
+  # ---------------------------------------------------------------------------
+  integration:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    needs: [lint-typecheck, test-unit-ts]
+    # Run integration tests only on main branch pushes to save CI time
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build:packages
+
+      - name: Start stack
+        working-directory: docker/compose
+        run: |
+          docker compose up -d --wait --wait-timeout 120
+        env:
+          COMPOSE_FILE: docker-compose.yml
+
+      - name: Run integration tests
+        run: pnpm --filter @next-sdr/test-harness test:integration
+        env:
+          CONTROL_API_URL: http://localhost:3000
+          REGISTRY_URL: http://localhost:3001
+          SCHEDULER_URL: http://localhost:3002
+          WINDOW_ENGINE_URL: http://localhost:3003
+          SESSION_GATEWAY_URL: http://localhost:3004
+
+      - name: Collect logs on failure
+        if: failure()
+        working-directory: docker/compose
+        run: docker compose logs --no-color > /tmp/docker-compose.log 2>&1
+
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-compose-logs
+          path: /tmp/docker-compose.log
+
+      - name: Tear down stack
+        if: always()
+        working-directory: docker/compose
+        run: docker compose down -v

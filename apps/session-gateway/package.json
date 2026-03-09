@@ -1,0 +1,29 @@
+{
+  "name": "@next-sdr/session-gateway",
+  "version": "0.1.0",
+  "description": "Session gateway — WebSocket bridge for browser clients",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@next-sdr/contracts": "workspace:*",
+    "@next-sdr/config": "workspace:*",
+    "@fastify/websocket": "^8.3.0",
+    "fastify": "^4.28.0",
+    "pino": "^9.2.0",
+    "ws": "^8.17.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.0",
+    "@types/ws": "^8.5.10",
+    "tsx": "^4.11.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
+  }
+}

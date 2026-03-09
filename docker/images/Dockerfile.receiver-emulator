@@ -1,0 +1,51 @@
+# Build stage: compile the C++ emulator
+FROM debian:bookworm-slim AS builder
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    cmake \
+    ninja-build \
+    git \
+    libcurl4-openssl-dev \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
+
+# Copy source
+COPY native/receiver-emulator ./native/receiver-emulator
+
+WORKDIR /build/native/receiver-emulator
+RUN cmake -B build \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_TESTS=OFF \
+    -G Ninja \
+  && cmake --build build --parallel "$(nproc)"
+
+# Runtime stage
+FROM debian:bookworm-slim AS runner
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libcurl4 \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN groupadd -r sdr && useradd -r -g sdr sdr
+
+COPY --from=builder /build/native/receiver-emulator/build/receiver-emulator /usr/local/bin/receiver-emulator
+
+USER sdr
+
+ENV REGISTRY_URL=http://receiver-registry:3001
+ENV HOST=0.0.0.0
+ENV PORT=8080
+ENV CENTRE_FREQUENCY_HZ=145000000
+ENV SAMPLE_RATE_HZ=2048000
+ENV SCENARIO_ID=single-fm
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=5s --timeout=3s --start-period=15s --retries=5 \
+  CMD wget -qO- http://localhost:8080/healthz/live || exit 1
+
+ENTRYPOINT ["/usr/local/bin/receiver-emulator"]

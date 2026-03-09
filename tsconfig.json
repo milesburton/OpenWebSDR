@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.base.json",
+  "references": [
+    { "path": "./packages/contracts" },
+    { "path": "./packages/config" },
+    { "path": "./packages/receiver-sdk" },
+    { "path": "./packages/scenario-definitions" },
+    { "path": "./packages/test-utils" },
+    { "path": "./apps/control-api" },
+    { "path": "./apps/receiver-registry" },
+    { "path": "./apps/scheduler" },
+    { "path": "./apps/session-gateway" },
+    { "path": "./apps/window-engine" },
+    { "path": "./apps/web-ui" },
+    { "path": "./apps/test-harness" }
+  ],
+  "files": []
+}

@@ -1,0 +1,34 @@
+FROM node:20-alpine AS base
+RUN apk add --no-cache dumb-init
+RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
+WORKDIR /app
+
+FROM base AS builder
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY tsconfig.base.json ./
+COPY packages/contracts ./packages/contracts
+COPY packages/config ./packages/config
+COPY apps/receiver-registry ./apps/receiver-registry
+
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter @next-sdr/contracts build
+RUN pnpm --filter @next-sdr/config build
+RUN pnpm --filter @next-sdr/receiver-registry build
+
+FROM base AS runner
+ENV NODE_ENV=production
+
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages/contracts/dist ./packages/contracts/dist
+COPY --from=builder /app/packages/config/dist ./packages/config/dist
+COPY --from=builder /app/apps/receiver-registry/dist ./apps/receiver-registry/dist
+COPY --from=builder /app/apps/receiver-registry/package.json ./apps/receiver-registry/package.json
+
+EXPOSE 3001
+
+USER node
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "apps/receiver-registry/dist/index.js"]
+
+HEALTHCHECK --interval=5s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget -qO- http://localhost:3001/healthz/live || exit 1

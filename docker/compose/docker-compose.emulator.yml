@@ -1,0 +1,11 @@
+###############################################################################
+# Emulator override — used for fault injection test scenarios.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.emulator.yml up
+###############################################################################
+
+version: "3.9"
+
+services:
+  receiver-emulator:
+    environment:
+      SCENARIO_ID: "${SCENARIO_ID:-single-fm}"

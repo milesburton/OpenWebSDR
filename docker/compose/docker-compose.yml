@@ -1,0 +1,287 @@
+###############################################################################
+# Next SDR — Docker Compose (default: emulator profile)
+#
+# Usage:
+#   docker compose up                    # Start with emulator
+#   docker compose --profile rtlsdr up  # Start with real RTL-SDR hardware
+###############################################################################
+
+version: "3.9"
+
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-restart: &default-restart
+  restart: unless-stopped
+
+networks:
+  sdr-internal:
+    driver: bridge
+    internal: true
+  sdr-external:
+    driver: bridge
+
+volumes:
+  iq-fixtures:
+    driver: local
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # receiver-registry
+  # ---------------------------------------------------------------------------
+  receiver-registry:
+    <<: *default-restart
+    build:
+      context: ../..
+      dockerfile: docker/images/Dockerfile.receiver-registry
+    image: next-sdr/receiver-registry:local
+    container_name: next-sdr-receiver-registry
+    networks:
+      - sdr-internal
+    environment:
+      HOST: 0.0.0.0
+      PORT: "3001"
+      LOG_LEVEL: info
+      RECEIVER_HEARTBEAT_INTERVAL_MS: "5000"
+      RECEIVER_TIMEOUT_MS: "15000"
+    ports:
+      - "3001:3001"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/healthz/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    logging: *default-logging
+
+  # ---------------------------------------------------------------------------
+  # window-engine
+  # ---------------------------------------------------------------------------
+  window-engine:
+    <<: *default-restart
+    build:
+      context: ../..
+      dockerfile: docker/images/Dockerfile.scheduler  # Reuse node image pattern
+    image: next-sdr/window-engine:local
+    container_name: next-sdr-window-engine
+    networks:
+      - sdr-internal
+    environment:
+      HOST: 0.0.0.0
+      PORT: "3003"
+      LOG_LEVEL: info
+      DEFAULT_CENTRE_FREQUENCY_HZ: "145000000"
+      DEFAULT_SAMPLE_RATE_HZ: "2048000"
+      GUARD_BAND_HZ: "100000"
+    ports:
+      - "3003:3003"
+    depends_on:
+      receiver-registry:
+        condition: service_healthy
+    command: ["node", "apps/window-engine/dist/index.js"]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3003/healthz/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    logging: *default-logging
+
+  # ---------------------------------------------------------------------------
+  # scheduler
+  # ---------------------------------------------------------------------------
+  scheduler:
+    <<: *default-restart
+    build:
+      context: ../..
+      dockerfile: docker/images/Dockerfile.scheduler
+    image: next-sdr/scheduler:local
+    container_name: next-sdr-scheduler
+    networks:
+      - sdr-internal
+    environment:
+      HOST: 0.0.0.0
+      PORT: "3002"
+      LOG_LEVEL: info
+      MAX_UNIQUE_CHANNELS: "32"
+      MAX_SESSIONS_PER_CHANNEL: "16"
+      MAX_TOTAL_SESSIONS: "64"
+      CHANNEL_IDLE_TIMEOUT_MS: "30000"
+      WATERFALL_QUOTA: "8"
+      WINDOW_ENGINE_URL: "http://window-engine:3003"
+    ports:
+      - "3002:3002"
+    depends_on:
+      receiver-registry:
+        condition: service_healthy
+      window-engine:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3002/healthz/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    logging: *default-logging
+
+  # ---------------------------------------------------------------------------
+  # control-api
+  # ---------------------------------------------------------------------------
+  control-api:
+    <<: *default-restart
+    build:
+      context: ../..
+      dockerfile: docker/images/Dockerfile.scheduler  # Reuse node image pattern
+    image: next-sdr/control-api:local
+    container_name: next-sdr-control-api
+    networks:
+      - sdr-internal
+      - sdr-external
+    environment:
+      HOST: 0.0.0.0
+      PORT: "3000"
+      LOG_LEVEL: info
+      REGISTRY_URL: "http://receiver-registry:3001"
+      SCHEDULER_URL: "http://scheduler:3002"
+      WINDOW_ENGINE_URL: "http://window-engine:3003"
+    ports:
+      - "3000:3000"
+    depends_on:
+      scheduler:
+        condition: service_healthy
+    command: ["node", "apps/control-api/dist/index.js"]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/healthz/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    logging: *default-logging
+
+  # ---------------------------------------------------------------------------
+  # session-gateway
+  # ---------------------------------------------------------------------------
+  session-gateway:
+    <<: *default-restart
+    build:
+      context: ../..
+      dockerfile: docker/images/Dockerfile.scheduler  # Reuse node image pattern
+    image: next-sdr/session-gateway:local
+    container_name: next-sdr-session-gateway
+    networks:
+      - sdr-internal
+      - sdr-external
+    environment:
+      HOST: 0.0.0.0
+      PORT: "3004"
+      LOG_LEVEL: info
+      SCHEDULER_URL: "http://scheduler:3002"
+      MAX_CONNECTIONS_PER_USER: "4"
+      PING_INTERVAL_MS: "10000"
+      PONG_TIMEOUT_MS: "5000"
+    ports:
+      - "3004:3004"
+    depends_on:
+      scheduler:
+        condition: service_healthy
+    command: ["node", "apps/session-gateway/dist/index.js"]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3004/healthz/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    logging: *default-logging
+
+  # ---------------------------------------------------------------------------
+  # receiver-emulator (default profile)
+  # ---------------------------------------------------------------------------
+  receiver-emulator:
+    <<: *default-restart
+    build:
+      context: ../..
+      dockerfile: docker/images/Dockerfile.receiver-emulator
+    image: next-sdr/receiver-emulator:local
+    container_name: next-sdr-receiver-emulator
+    networks:
+      - sdr-internal
+    environment:
+      REGISTRY_URL: "http://receiver-registry:3001"
+      HOST: "0.0.0.0"
+      PORT: "8080"
+      SELF_HOST: "receiver-emulator"
+      CENTRE_FREQUENCY_HZ: "145000000"
+      SAMPLE_RATE_HZ: "2048000"
+      SCENARIO_ID: "single-fm"
+    depends_on:
+      receiver-registry:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/healthz/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+    logging: *default-logging
+
+  # ---------------------------------------------------------------------------
+  # channel-service
+  # ---------------------------------------------------------------------------
+  channel-service:
+    <<: *default-restart
+    build:
+      context: ../..
+      dockerfile: docker/images/Dockerfile.channel-service
+    image: next-sdr/channel-service:local
+    container_name: next-sdr-channel-service
+    networks:
+      - sdr-internal
+    environment:
+      SCHEDULER_URL: "http://scheduler:3002"
+    depends_on:
+      scheduler:
+        condition: service_healthy
+    logging: *default-logging
+
+  # ---------------------------------------------------------------------------
+  # waterfall-service
+  # ---------------------------------------------------------------------------
+  waterfall-service:
+    <<: *default-restart
+    build:
+      context: ../..
+      dockerfile: docker/images/Dockerfile.waterfall-service
+    image: next-sdr/waterfall-service:local
+    container_name: next-sdr-waterfall-service
+    networks:
+      - sdr-internal
+    depends_on:
+      channel-service:
+        condition: service_started
+    logging: *default-logging
+
+  # ---------------------------------------------------------------------------
+  # web-ui
+  # ---------------------------------------------------------------------------
+  web-ui:
+    <<: *default-restart
+    build:
+      context: ../..
+      dockerfile: docker/images/Dockerfile.web-ui
+    image: next-sdr/web-ui:local
+    container_name: next-sdr-web-ui
+    networks:
+      - sdr-internal
+      - sdr-external
+    ports:
+      - "8888:80"
+    depends_on:
+      control-api:
+        condition: service_healthy
+      session-gateway:
+        condition: service_healthy
+    logging: *default-logging

@@ -1,0 +1,25 @@
+{
+  "name": "@next-sdr/receiver-sdk",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for receiver backend communication",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@next-sdr/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  },
+  "files": ["dist"]
+}

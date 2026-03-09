@@ -1,0 +1,21 @@
+node_modules/
+dist/
+.turbo/
+*.log
+.env
+.env.local
+.DS_Store
+
+# Build artifacts
+native/*/build/
+native/*/cmake-build-*/
+
+# Coverage
+coverage/
+
+# Editor
+.vscode/settings.json
+.idea/
+
+# Docker
+*.pid
