@@ -104,7 +104,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            build-essential cmake ninja-build libcurl4-openssl-dev
+            build-essential cmake ninja-build libcurl4-openssl-dev libssl-dev
 
       - name: Configure
         working-directory: native/receiver-emulator

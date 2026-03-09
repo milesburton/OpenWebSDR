@@ -233,17 +233,17 @@ int main()
 
             emulator = std::make_unique<nextsdr::ReceiverEmulator>(config);
             emulator->start([udp_sock, dest, win_id](const nextsdr::IQBlock& block) {
-                if (block.dropped || block.iq_payload.empty()) return;
+                if (block.dropped || block.payload.empty()) return;
 
                 uint32_t id_len = static_cast<uint32_t>(win_id.size());
-                size_t total = 4 + id_len + block.iq_payload.size() * sizeof(int16_t);
+                size_t total = 4 + id_len + block.payload.size() * sizeof(int16_t);
                 std::vector<uint8_t> pkt(total);
 
                 std::memcpy(pkt.data(), &id_len, 4);
                 std::memcpy(pkt.data() + 4, win_id.data(), id_len);
                 std::memcpy(pkt.data() + 4 + id_len,
-                            block.iq_payload.data(),
-                            block.iq_payload.size() * sizeof(int16_t));
+                            block.payload.data(),
+                            block.payload.size() * sizeof(int16_t));
 
                 ::sendto(udp_sock, pkt.data(), pkt.size(), 0,
                          reinterpret_cast<const sockaddr*>(&dest), sizeof(dest));

@@ -1,8 +1,9 @@
 #pragma once
 
 #include <functional>
-#include <string>
 #include <map>
+#include <memory>
+#include <string>
 
 namespace nextsdr {
 
