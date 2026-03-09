@@ -6,13 +6,15 @@ primary_region = "lhr"
   dockerfile_context = "."
 
 [env]
-  REGISTRY_URL         = "http://next-sdr-receiver-registry.internal:3001"
-  HOST                 = "0.0.0.0"
-  PORT                 = "8080"
-  SELF_HOST            = "next-sdr-receiver-emulator.internal"
-  CENTRE_FREQUENCY_HZ  = "145000000"
-  SAMPLE_RATE_HZ       = "2048000"
-  SCENARIO_ID          = "single-fm"
+  REGISTRY_URL                = "http://next-sdr-receiver-registry.internal:3001"
+  HOST                        = "0.0.0.0"
+  PORT                        = "8080"
+  SELF_HOST                   = "next-sdr-receiver-emulator.internal"
+  CENTRE_FREQUENCY_HZ         = "145000000"
+  SAMPLE_RATE_HZ              = "2048000"
+  SCENARIO_ID                 = "single-fm"
+  CHANNEL_SERVICE_HOST        = "next-sdr-channel-service.internal"
+  CHANNEL_SERVICE_UDP_PORT    = "5005"
 
 [http_service]
   internal_port = 8080

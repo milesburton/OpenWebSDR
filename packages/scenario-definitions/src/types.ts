@@ -1,7 +1,3 @@
-/**
- * Scenario type definitions for the receiver emulator.
- */
-
 export type SignalType = 'fm' | 'nfm' | 'am' | 'tone' | 'noise' | 'iq_file';
 
 export interface ToneSignal {

@@ -1,12 +1,3 @@
-/**
- * Unit tests for fault injection in ReceiverEmulator.
- *
- * Tests verify:
- * - Drop probability produces dropped blocks at roughly the expected rate
- * - Corrupt blocks have the corrupt flag set
- * - End-of-stream is delivered on planned disconnect
- */
-
 #include <gtest/gtest.h>
 #include "emulator.h"
 

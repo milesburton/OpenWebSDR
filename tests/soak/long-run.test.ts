@@ -1,12 +1,3 @@
-/**
- * Soak test: long-duration stability.
- *
- * Runs the platform under sustained load for an extended period,
- * verifying there are no memory leaks or queue growth.
- *
- * Run with: SOAK_TEST=1 SOAK_DURATION_MINUTES=60 pnpm test:integration
- */
-
 import { describe, it, beforeAll, expect } from 'vitest';
 import { TestHarness, defaultConfig } from '../../apps/test-harness/src';
 

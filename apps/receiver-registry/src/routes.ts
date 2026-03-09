@@ -1,7 +1,3 @@
-/**
- * HTTP routes for the receiver-registry service.
- */
-
 import type { FastifyInstance } from 'fastify';
 import type { ReceiverRegistry } from './registry';
 import type { Logger } from './logger';

@@ -1,12 +1,22 @@
-/**
- * window-engine service entry point.
- */
-
 import Fastify from 'fastify';
 import { loadWindowEngineConfig } from '@next-sdr/config';
 import { createLogger } from '../../receiver-registry/src/logger';
 import { WindowManager } from './window-manager';
-import type { CreateWindowRequest, LivenessResponse, ReadinessResponse } from '@next-sdr/contracts';
+import type { CreateWindowRequest, LivenessResponse, ReadinessResponse, ReceiverWindow } from '@next-sdr/contracts';
+
+const SCHEDULER_URL = process.env.SCHEDULER_URL ?? 'http://scheduler:3002';
+
+async function notifyScheduler(window: ReceiverWindow, logger: ReturnType<typeof createLogger>): Promise<void> {
+  try {
+    await fetch(`${SCHEDULER_URL}/window`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(window),
+    });
+  } catch (err) {
+    logger.warn({ err }, 'Failed to notify scheduler of active window');
+  }
+}
 
 async function main(): Promise<void> {
   const config = loadWindowEngineConfig();
@@ -27,9 +37,10 @@ async function main(): Promise<void> {
 
   app.post<{ Body: CreateWindowRequest }>('/windows', async (request) => {
     const window = manager.create(request.body);
-    // Auto-activate for MVP
     manager.activate(window.id);
-    return { window };
+    const activated = manager.get(window.id) ?? window;
+    void notifyScheduler(activated, logger);
+    return { window: activated };
   });
 
   app.get('/windows', async () => ({ windows: manager.getAll() }));

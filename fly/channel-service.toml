@@ -6,9 +6,10 @@ primary_region = "lhr"
   dockerfile_context = "."
 
 [env]
-  SCHEDULER_URL = "http://next-sdr-scheduler.internal:3002"
+  HOST        = "0.0.0.0"
+  PORT        = "9100"
+  IQ_UDP_PORT = "5005"
 
-# No public HTTP service — internal only
 [http_service]
   internal_port = 9100
   auto_stop_machines = false

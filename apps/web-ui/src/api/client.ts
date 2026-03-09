@@ -1,7 +1,3 @@
-/**
- * HTTP client for the control-api.
- */
-
 const BASE_URL = '/api/v1';
 
 async function get<T>(path: string): Promise<T> {

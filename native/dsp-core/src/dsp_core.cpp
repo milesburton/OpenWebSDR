@@ -1,13 +1,3 @@
-/**
- * DSP core implementation.
- *
- * Provides:
- *   - FM demodulation
- *   - Channelisation (frequency shift + filter + decimate)
- *   - FFT-based power spectrum estimation
- *   - FIR filter design
- */
-
 #include "dsp_core.h"
 
 #include <algorithm>

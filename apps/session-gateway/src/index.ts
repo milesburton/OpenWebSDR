@@ -1,10 +1,3 @@
-/**
- * session-gateway service entry point.
- *
- * Manages WebSocket connections between browsers and the platform.
- * Bridges audio streams, waterfall data, and control messages.
- */
-
 import Fastify from 'fastify';
 import FastifyWebsocket from '@fastify/websocket';
 import { randomUUID } from 'crypto';

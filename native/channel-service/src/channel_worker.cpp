@@ -1,7 +1,3 @@
-/**
- * ChannelWorker implementation.
- */
-
 #include "channel_worker.h"
 
 #include <condition_variable>
@@ -10,7 +6,6 @@
 #include <queue>
 #include <stdexcept>
 
-// DSP core
 #include "../../dsp-core/include/dsp_core.h"
 
 namespace nextsdr {
@@ -108,16 +103,13 @@ void ChannelWorker::process_loop(AudioCallback callback)
             queue_->queue.pop();
         }
 
-        // Channelise
         std::vector<float> narrow_iq;
         channeliser.process(iq_block, narrow_iq);
 
-        // Demodulate
         std::vector<float> audio;
         if (config_.demod_mode == "NFM" || config_.demod_mode == "FM") {
             demodulator.demodulate(narrow_iq, audio);
         } else {
-            // For unsupported modes, output silence
             audio.assign(narrow_iq.size() / 2, 0.0f);
         }
 

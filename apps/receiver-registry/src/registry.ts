@@ -1,8 +1,3 @@
-/**
- * Receiver registry — in-memory store for receiver state.
- * Tracks all registered receivers and their current health.
- */
-
 import { randomUUID } from 'crypto';
 import type { Receiver, ReceiverRegistrationRequest } from '@next-sdr/contracts';
 import type { Logger } from './logger';

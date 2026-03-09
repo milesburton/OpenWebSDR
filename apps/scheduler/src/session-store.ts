@@ -1,7 +1,3 @@
-/**
- * In-memory session store.
- */
-
 import { randomUUID } from 'crypto';
 import type { Session, SessionCapabilities } from '@next-sdr/contracts';
 

@@ -1,8 +1,3 @@
-/**
- * WebSocket connection manager.
- * Tracks active WebSocket connections per session and user.
- */
-
 import type { WebSocket } from 'ws';
 
 export interface ManagedConnection {

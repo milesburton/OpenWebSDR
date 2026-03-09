@@ -1,11 +1,3 @@
-/**
- * Integration test: stack boot.
- * Verifies that all services start and report readiness.
- *
- * Requires a running Docker Compose stack.
- * Run: docker compose up -d && pnpm test:integration
- */
-
 import { describe, it, beforeAll } from 'vitest';
 import { TestHarness, defaultConfig } from '../../apps/test-harness/src';
 

@@ -1,8 +1,3 @@
-/**
- * Core scheduler logic.
- * Handles tune requests, channel allocation, channel reuse, and session creation.
- */
-
 import type { TuneRequest, TuneResponse, ReceiverWindow } from '@next-sdr/contracts';
 import type { SchedulerConfig } from '@next-sdr/config';
 import type { Logger } from '../../receiver-registry/src/logger';
@@ -53,7 +48,6 @@ export class Scheduler {
       audioRequested: req.audioRequested ?? true,
     };
 
-    // Check for a reusable channel first
     const existing = this.channels.findReusable(window.id, definition);
 
     if (existing) {
@@ -79,7 +73,6 @@ export class Scheduler {
       };
     }
 
-    // Validate policy for a new channel
     const policyResult = this.policy.evaluate({
       activeChannels: this.channels.countActive(),
       activeSessions: this.sessions.countActive(),
@@ -96,7 +89,6 @@ export class Scheduler {
       return { success: false, reason: policyResult.reason };
     }
 
-    // Create a new channel
     const channel = this.channels.createPlaceholder(window.id, definition);
 
     try {
@@ -142,11 +134,7 @@ export class Scheduler {
 
     const channel = this.channels.get(session.channelId);
     if (channel && channel.listenerCount === 0) {
-      this.logger.info(
-        { channelId: channel.id },
-        'Channel has no listeners, marking idle',
-      );
-      // In the real implementation this would trigger idle cleanup
+      this.logger.info({ channelId: channel.id }, 'Channel has no listeners, marking idle');
     }
 
     return true;

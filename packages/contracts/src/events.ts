@@ -1,8 +1,3 @@
-/**
- * Internal event bus types.
- * Services communicate internally via typed events.
- */
-
 import type { Receiver } from './receiver';
 import type { ReceiverWindow } from './window';
 import type { Channel } from './channel';

@@ -1,8 +1,3 @@
-/**
- * Receiver domain types.
- * These types are shared across all services and define the core domain model.
- */
-
 export type ReceiverKind = 'emulator' | 'rtlsdr';
 
 export type ReceiverStatus =

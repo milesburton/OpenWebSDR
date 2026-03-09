@@ -1,8 +1,3 @@
-/**
- * Minimal HTTP server implementation using cpp-httplib.
- * Exposes the receiver control contract endpoints.
- */
-
 #include "http_server.h"
 
 #define CPPHTTPLIB_OPENSSL_SUPPORT 0

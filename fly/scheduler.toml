@@ -15,6 +15,7 @@ primary_region = "lhr"
   CHANNEL_IDLE_TIMEOUT_MS   = "30000"
   WATERFALL_QUOTA           = "8"
   WINDOW_ENGINE_URL         = "http://next-sdr-window-engine.internal:3003"
+  CHANNEL_SERVICE_URL       = "http://next-sdr-channel-service.internal:9100"
 
 [http_service]
   internal_port = 3002

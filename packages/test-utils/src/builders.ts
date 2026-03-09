@@ -1,8 +1,3 @@
-/**
- * Test object builders using the builder pattern.
- * Provide sensible defaults so tests only specify what they care about.
- */
-
 import type {
   Receiver,
   ReceiverCapabilities,

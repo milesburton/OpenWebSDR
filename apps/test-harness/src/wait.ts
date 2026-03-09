@@ -1,7 +1,3 @@
-/**
- * Utilities for waiting on service readiness in integration tests.
- */
-
 export async function waitForUrl(
   url: string,
   options: { timeoutMs?: number; intervalMs?: number; expectedStatus?: number } = {},

@@ -1,23 +1,21 @@
-/**
- * receiver-emulator entry point.
- *
- * Starts the emulator, registers with the receiver-registry,
- * and exposes the receiver control contract over HTTP.
- */
-
 #include "emulator.h"
 #include "http_server.h"
 #include "registry_client.h"
 
+#include <arpa/inet.h>
 #include <atomic>
 #include <chrono>
 #include <csignal>
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
+#include <netinet/in.h>
 #include <nlohmann/json.hpp>
 #include <stdexcept>
 #include <string>
+#include <sys/socket.h>
 #include <thread>
+#include <unistd.h>
 
 static std::atomic<bool> g_shutdown{false};
 
@@ -58,19 +56,16 @@ int main()
     std::cout << "[emulator] Sample rate: " << sample_rate_hz << " Hz\n";
     std::cout << "[emulator] Scenario: " << scenario_id << '\n';
 
-    // --- Build signal scene ---
     nextsdr::EmulatorConfig config;
     config.centre_frequency_hz = centre_freq_hz;
     config.sample_rate_hz = sample_rate_hz;
 
-    // Always add noise floor
     config.signals.push_back({
         nextsdr::SyntheticSignal::Type::NOISE,
         0.0,
         -80.0,
     });
 
-    // Add scenario-specific signals
     if (scenario_id == "single-fm" || scenario_id == "block-drops") {
         config.signals.push_back({
             nextsdr::SyntheticSignal::Type::NFM,
@@ -104,7 +99,6 @@ int main()
         config.faults.disconnect_after_seconds = 10;
     }
 
-    // --- Register with registry ---
     nextsdr::RegistryClient registry(registry_url, self_endpoint);
     std::string receiver_id;
 
@@ -127,7 +121,6 @@ int main()
     config.receiver_id = receiver_id;
     config.window_id = "";
 
-    // --- Heartbeat thread ---
     std::thread heartbeat_thread([&]() {
         while (!g_shutdown.load()) {
             std::this_thread::sleep_for(std::chrono::seconds(5));
@@ -135,11 +128,9 @@ int main()
         }
     });
 
-    // --- Start emulator (will stream once window is configured) ---
     std::unique_ptr<nextsdr::ReceiverEmulator> emulator;
     std::atomic<bool> streaming{false};
 
-    // --- HTTP control server ---
     nextsdr::HttpServer server(self_host, self_port);
 
     server.get("/healthz/live", [](const nextsdr::HttpRequest&) {
@@ -218,6 +209,9 @@ int main()
             }
         });
 
+    const std::string channel_host = env_or("CHANNEL_SERVICE_HOST", "channel-service");
+    const int channel_udp_port = std::stoi(env_or("CHANNEL_SERVICE_UDP_PORT", "5005"));
+
     server.post("/receivers/" + receiver_id + "/stream/start",
         [&](const nextsdr::HttpRequest& req) {
             if (streaming.load()) {
@@ -229,23 +223,36 @@ int main()
                 config.window_id = body.value("windowId", std::string{});
             } catch (...) {}
 
+            int udp_sock = ::socket(AF_INET, SOCK_DGRAM, 0);
+            sockaddr_in dest{};
+            dest.sin_family = AF_INET;
+            dest.sin_port = htons(static_cast<uint16_t>(channel_udp_port));
+            ::inet_pton(AF_INET, channel_host.c_str(), &dest.sin_addr);
+
+            const std::string win_id = config.window_id;
+
             emulator = std::make_unique<nextsdr::ReceiverEmulator>(config);
-            emulator->start([](const nextsdr::IQBlock& block) {
-                // In production, IQ blocks are forwarded to channel-service via UDP/ZMQ.
-                // For the skeleton, we count blocks and log periodically.
-                static uint64_t count = 0;
-                if (++count % 50 == 0) {
-                    std::cout << "[emulator] Block " << block.sequence_number
-                              << " dropped=" << block.dropped
-                              << " corrupt=" << block.corrupt
-                              << " eos=" << block.end_of_stream << '\n';
-                }
+            emulator->start([udp_sock, dest, win_id](const nextsdr::IQBlock& block) {
+                if (block.dropped || block.iq_payload.empty()) return;
+
+                uint32_t id_len = static_cast<uint32_t>(win_id.size());
+                size_t total = 4 + id_len + block.iq_payload.size() * sizeof(int16_t);
+                std::vector<uint8_t> pkt(total);
+
+                std::memcpy(pkt.data(), &id_len, 4);
+                std::memcpy(pkt.data() + 4, win_id.data(), id_len);
+                std::memcpy(pkt.data() + 4 + id_len,
+                            block.iq_payload.data(),
+                            block.iq_payload.size() * sizeof(int16_t));
+
+                ::sendto(udp_sock, pkt.data(), pkt.size(), 0,
+                         reinterpret_cast<const sockaddr*>(&dest), sizeof(dest));
             });
             streaming.store(true);
 
             nlohmann::json resp = {
                 {"success", true},
-                {"streamEndpoint", "udp://" + env_or("SELF_HOST", "receiver-emulator") + ":5005"}
+                {"streamEndpoint", "udp://" + channel_host + ":" + std::to_string(channel_udp_port)}
             };
             return nextsdr::HttpResponse{200, resp.dump()};
         });
@@ -270,7 +277,6 @@ int main()
             return nextsdr::HttpResponse{200, resp.dump()};
         });
 
-    // --- Main loop: listen until shutdown ---
     std::thread server_thread([&]() { server.listen(); });
 
     while (!g_shutdown.load()) {

@@ -1,8 +1,3 @@
-/**
- * Integration test: receiver registration.
- * Verifies that the emulator registers with the registry on startup.
- */
-
 import { describe, it, beforeAll, expect } from 'vitest';
 import { TestHarness, defaultConfig } from '../../apps/test-harness/src';
 

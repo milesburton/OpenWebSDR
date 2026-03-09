@@ -1,31 +1,39 @@
-/**
- * scheduler service entry point.
- */
-
 import Fastify from 'fastify';
 import { loadSchedulerConfig } from '@next-sdr/config';
 import { createLogger } from '../../receiver-registry/src/logger';
 import { Scheduler } from './scheduler';
 import { registerRoutes } from './routes';
-import type { ReceiverWindow } from '@next-sdr/contracts';
+import type { ChannelDefinition, ReceiverWindow } from '@next-sdr/contracts';
+
+const CHANNEL_SERVICE_URL = process.env.CHANNEL_SERVICE_URL ?? 'http://channel-service:9100';
+
+async function provisionChannel(
+  windowId: string,
+  channelId: string,
+  definition: ChannelDefinition,
+): Promise<void> {
+  const res = await fetch(`${CHANNEL_SERVICE_URL}/channels`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ windowId, channelId, definition }),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`channel-service returned ${res.status}: ${text}`);
+  }
+}
 
 async function main(): Promise<void> {
   const config = loadSchedulerConfig();
   const logger = createLogger(config.logLevel, config.serviceName);
 
-  // In production this will be populated from the window-engine service.
-  // For now, a stub that holds the current window in memory.
   let activeWindow: ReceiverWindow | undefined;
 
   const scheduler = new Scheduler(
     config,
     {
       getActiveWindow: () => activeWindow,
-      provisionChannel: async (_windowId, _channelId, _definition) => {
-        // In production, this calls channel-service to start a new channel worker.
-        // For the skeleton, it resolves immediately.
-        await Promise.resolve();
-      },
+      provisionChannel,
     },
     logger,
   );
@@ -33,9 +41,9 @@ async function main(): Promise<void> {
   const app = Fastify({ disableRequestLogging: true });
   registerRoutes(app, scheduler);
 
-  // Accept window updates from window-engine
   app.put<{ Body: ReceiverWindow }>('/window', async (request) => {
     activeWindow = request.body;
+    logger.info({ windowId: activeWindow.id }, 'Active window updated');
     return { accepted: true };
   });
 

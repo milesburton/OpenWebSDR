@@ -1,11 +1,3 @@
-/**
- * control-api service entry point.
- *
- * The control API is the public-facing HTTP API for the platform.
- * It aggregates data from receiver-registry, scheduler, and window-engine,
- * and proxies tune requests to the scheduler.
- */
-
 import Fastify from 'fastify';
 import { loadControlApiConfig } from '@next-sdr/config';
 import { createLogger } from '../../receiver-registry/src/logger';

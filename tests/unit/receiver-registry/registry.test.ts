@@ -1,7 +1,3 @@
-/**
- * Unit tests for ReceiverRegistry.
- */
-
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ReceiverRegistry } from '../../../apps/receiver-registry/src/registry';
 import type { Logger } from '../../../apps/receiver-registry/src/logger';

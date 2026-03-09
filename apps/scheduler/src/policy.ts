@@ -1,8 +1,3 @@
-/**
- * Scheduler policy rules.
- * Validates tune requests and enforces platform limits.
- */
-
 import type { ChannelDefinition, ReceiverWindow } from '@next-sdr/contracts';
 import type { SchedulerConfig } from '@next-sdr/config';
 

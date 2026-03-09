@@ -1,10 +1,3 @@
-/**
- * Waterfall display panel.
- *
- * Renders a canvas-based waterfall from FFT data received over WebSocket.
- * FFT data arrives as a binary payload: Float32Array of power values in dBFS.
- */
-
 import { useEffect, useRef, useState } from 'react';
 import styles from './WaterfallPanel.module.css';
 

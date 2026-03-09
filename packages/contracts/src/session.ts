@@ -1,8 +1,3 @@
-/**
- * Session domain types.
- * A session represents a listener attached to a channel.
- */
-
 export type SessionStatus = 'connecting' | 'active' | 'idle' | 'closed';
 
 export interface SessionCapabilities {

@@ -1,8 +1,3 @@
-/**
- * Built-in test scenarios.
- * These are deterministic scenarios used in integration and contract tests.
- */
-
 import type { EmulatorScenario } from './types';
 
 /** Quiet 2 m band with a single FM signal at 145.500 MHz */

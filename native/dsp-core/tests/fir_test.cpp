@@ -1,7 +1,3 @@
-/**
- * Unit tests for FIR filter design.
- */
-
 #include <gtest/gtest.h>
 #include "dsp_core.h"
 

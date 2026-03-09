@@ -1,8 +1,3 @@
-/**
- * RegistryClient implementation.
- * Uses libcurl for HTTP communication with the receiver-registry service.
- */
-
 #include "registry_client.h"
 
 #include <curl/curl.h>

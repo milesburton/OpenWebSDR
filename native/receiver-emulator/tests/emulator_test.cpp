@@ -1,13 +1,3 @@
-/**
- * Unit tests for ReceiverEmulator.
- *
- * Tests verify:
- * - Block format correctness
- * - Sequence number monotonicity
- * - Correct sample count per block
- * - Receiver ID propagation
- */
-
 #include <gtest/gtest.h>
 #include "emulator.h"
 

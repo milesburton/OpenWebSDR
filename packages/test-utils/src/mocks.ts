@@ -1,7 +1,3 @@
-/**
- * Mock implementations of receiver contracts for unit testing.
- */
-
 import type {
   IReceiverControlClient,
   DiscoverReceiversResponse,

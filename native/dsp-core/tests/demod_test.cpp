@@ -1,7 +1,3 @@
-/**
- * Unit tests for FMDemodulator.
- */
-
 #include <gtest/gtest.h>
 #include "dsp_core.h"
 

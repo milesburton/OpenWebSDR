@@ -1,7 +1,3 @@
-/**
- * Unit tests for ChannelStore.
- */
-
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ChannelStore } from '../../../apps/scheduler/src/channel-store';
 import { buildChannelDefinition } from '@next-sdr/test-utils';

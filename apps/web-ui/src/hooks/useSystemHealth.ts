@@ -1,7 +1,3 @@
-/**
- * Hook that polls system health periodically.
- */
-
 import { useState, useEffect } from 'react';
 import { api } from '../api/client';
 

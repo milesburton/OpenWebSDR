@@ -1,10 +1,3 @@
-/**
- * ReceiverEmulator implementation.
- *
- * Generates synthetic IQ samples representing an RF scene over the 2 m amateur band.
- * Supports FM/NFM signal synthesis, additive white Gaussian noise, and fault injection.
- */
-
 #include "emulator.h"
 
 #include <algorithm>

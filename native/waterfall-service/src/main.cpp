@@ -1,7 +1,3 @@
-/**
- * waterfall-service entry point.
- */
-
 #include <atomic>
 #include <csignal>
 #include <iostream>

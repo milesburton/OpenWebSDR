@@ -1,10 +1,3 @@
-/**
- * E2E tests using Playwright.
- *
- * Requires the full Docker Compose stack to be running.
- * Set UI_URL to override the default web-ui URL.
- */
-
 import { test, expect } from '@playwright/test';
 
 const UI_URL = process.env['UI_URL'] ?? 'http://localhost:8888';

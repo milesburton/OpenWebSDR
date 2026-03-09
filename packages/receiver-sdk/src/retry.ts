@@ -1,7 +1,3 @@
-/**
- * Retry utilities for receiver operations.
- */
-
 export interface RetryOptions {
   maxAttempts: number;
   initialDelayMs: number;

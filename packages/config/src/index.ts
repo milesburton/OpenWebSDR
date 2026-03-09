@@ -1,10 +1,3 @@
-/**
- * @next-sdr/config
- *
- * Shared configuration loading utilities for Next SDR services.
- * Reads from environment variables with typed defaults.
- */
-
 export interface ServiceConfig {
   serviceName: string;
   host: string;

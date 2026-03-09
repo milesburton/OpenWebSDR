@@ -1,8 +1,3 @@
-/**
- * Receiver window domain types.
- * A window represents a wideband capture configuration applied to a receiver.
- */
-
 export type WindowStatus =
   | 'pending'
   | 'active'

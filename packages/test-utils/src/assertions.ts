@@ -1,7 +1,3 @@
-/**
- * Custom assertion helpers for Next SDR tests.
- */
-
 import type { Channel, Session, ReceiverWindow } from '@next-sdr/contracts';
 
 export function assertChannelActive(channel: Channel): void {

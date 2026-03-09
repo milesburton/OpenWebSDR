@@ -9,15 +9,6 @@
 
 namespace nextsdr {
 
-/**
- * ChannelWorker processes a single virtual channel from a wideband IQ stream.
- *
- * For each active channel, one ChannelWorker:
- *   1. Receives IQ blocks from the channel-service dispatcher
- *   2. Channelises (frequency shift + filter + decimate)
- *   3. Demodulates to audio
- *   4. Streams audio to connected listeners via WebSocket
- */
 class ChannelWorker {
 public:
     struct Config {
@@ -41,10 +32,6 @@ public:
     void stop();
     bool is_active() const { return active_.load(std::memory_order_acquire); }
 
-    /**
-     * Submit a wideband IQ block for processing.
-     * Thread-safe — can be called from the IQ dispatcher thread.
-     */
     void submit_iq_block(const std::vector<int16_t>& iq_payload);
 
     const Config& config() const { return config_; }

@@ -1,8 +1,3 @@
-/**
- * HTTP-based receiver control client.
- * Used by TypeScript services to communicate with receiver backends.
- */
-
 import type {
   IReceiverControlClient,
   DiscoverReceiversResponse,

@@ -1,8 +1,3 @@
-/**
- * Window manager — creates and manages receiver windows.
- * For MVP, supports a single window per receiver.
- */
-
 import { randomUUID } from 'crypto';
 import type { ReceiverWindow, CreateWindowRequest } from '@next-sdr/contracts';
 import type { WindowEngineConfig } from '@next-sdr/config';

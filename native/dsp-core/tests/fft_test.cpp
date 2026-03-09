@@ -1,12 +1,3 @@
-/**
- * Unit tests for FFTProcessor.
- *
- * Tests verify:
- * - Output has correct number of bins
- * - Pure tone at known frequency produces a peak at the expected bin
- * - Output is power in dBFS (negative values)
- */
-
 #include <gtest/gtest.h>
 #include "dsp_core.h"
 

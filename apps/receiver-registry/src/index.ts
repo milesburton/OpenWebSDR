@@ -1,10 +1,3 @@
-/**
- * receiver-registry service entry point.
- *
- * Tracks all registered receivers, monitors health, and exposes
- * an inventory API used by the scheduler and window-engine.
- */
-
 import Fastify from 'fastify';
 import { loadReceiverRegistryConfig } from '@next-sdr/config';
 import { createLogger } from './logger';

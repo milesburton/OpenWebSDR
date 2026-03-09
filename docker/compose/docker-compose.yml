@@ -113,6 +113,7 @@ services:
       CHANNEL_IDLE_TIMEOUT_MS: "30000"
       WATERFALL_QUOTA: "8"
       WINDOW_ENGINE_URL: "http://window-engine:3003"
+      CHANNEL_SERVICE_URL: "http://channel-service:9100"
     ports:
       - "3002:3002"
     depends_on:
@@ -217,8 +218,12 @@ services:
       CENTRE_FREQUENCY_HZ: "145000000"
       SAMPLE_RATE_HZ: "2048000"
       SCENARIO_ID: "single-fm"
+      CHANNEL_SERVICE_HOST: "channel-service"
+      CHANNEL_SERVICE_UDP_PORT: "5005"
     depends_on:
       receiver-registry:
+        condition: service_healthy
+      channel-service:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/healthz/live"]
@@ -241,10 +246,20 @@ services:
     networks:
       - sdr-internal
     environment:
-      SCHEDULER_URL: "http://scheduler:3002"
+      HOST: "0.0.0.0"
+      PORT: "9100"
+      IQ_UDP_PORT: "5005"
+    ports:
+      - "5005:5005/udp"
     depends_on:
       scheduler:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9100/healthz/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
     logging: *default-logging
 
   # ---------------------------------------------------------------------------

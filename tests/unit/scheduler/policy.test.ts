@@ -1,7 +1,3 @@
-/**
- * Unit tests for SchedulerPolicy.
- */
-
 import { describe, it, expect } from 'vitest';
 import { SchedulerPolicy } from '../../../apps/scheduler/src/policy';
 import { buildReceiverWindow, buildChannelDefinition } from '@next-sdr/test-utils';

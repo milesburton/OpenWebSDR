@@ -1,8 +1,3 @@
-/**
- * Channel domain types.
- * A channel is a virtual receiver carved from a wideband capture window.
- */
-
 export type DemodulationMode = 'FM' | 'NFM' | 'AM' | 'USB' | 'LSB' | 'RAW';
 
 export type ChannelStatus =

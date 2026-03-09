@@ -1,10 +1,3 @@
-/**
- * RTLSDRReceiver implementation.
- *
- * Wraps librtlsdr. Excluded from the emulator build profile.
- * Only compiled when BUILD_RTLSDR=ON.
- */
-
 #include "rtlsdr_receiver.h"
 
 // Shared IQ block type from emulator

@@ -14,6 +14,24 @@ else()
   add_link_options(-fsanitize=address,undefined)
 endif()
 
+include(FetchContent)
+
+FetchContent_Declare(
+  nlohmann_json
+  GIT_REPOSITORY https://github.com/nlohmann/json.git
+  GIT_TAG        v3.11.3
+  GIT_SHALLOW    TRUE
+)
+
+FetchContent_Declare(
+  cpp_httplib
+  GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
+  GIT_TAG        v0.15.3
+  GIT_SHALLOW    TRUE
+)
+
+FetchContent_MakeAvailable(nlohmann_json cpp_httplib)
+
 # DSP core
 add_subdirectory(../dsp-core dsp-core-build)
 
@@ -22,11 +40,15 @@ add_library(channel-service-lib STATIC
 )
 
 target_include_directories(channel-service-lib
-  PUBLIC include
+  PUBLIC
+    include
+    ${cpp_httplib_SOURCE_DIR}
 )
 
 target_link_libraries(channel-service-lib
-  PUBLIC dsp-core
+  PUBLIC
+    dsp-core
+    nlohmann_json::nlohmann_json
 )
 
 add_executable(channel-service

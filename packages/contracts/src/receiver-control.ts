@@ -1,8 +1,3 @@
-/**
- * Receiver control contract.
- * All receiver backends (emulator, rtlsdr) must implement this interface identically.
- */
-
 import type { ReceiverCapabilities, ReceiverHealth } from './receiver';
 
 export interface WindowConfig {

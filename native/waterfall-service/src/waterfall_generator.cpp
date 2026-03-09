@@ -1,7 +1,3 @@
-/**
- * WaterfallGenerator implementation.
- */
-
 #include "waterfall_generator.h"
 
 #include <atomic>

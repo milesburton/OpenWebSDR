@@ -1,8 +1,3 @@
-/**
- * Metrics names and types.
- * All services must emit these metrics via their metrics endpoint.
- */
-
 export const METRIC_NAMES = {
   activeReceivers: 'sdr_active_receivers',
   activeWindows: 'sdr_active_windows',

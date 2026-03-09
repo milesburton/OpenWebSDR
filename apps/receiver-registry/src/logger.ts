@@ -1,8 +1,3 @@
-/**
- * Structured logger interface and factory.
- * Uses pino for structured JSON logging.
- */
-
 export interface Logger {
   debug(obj: object, msg?: string): void;
   info(obj: object, msg?: string): void;

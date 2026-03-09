@@ -1,10 +1,3 @@
-/**
- * Performance test: channel scaling.
- *
- * Measures how the platform behaves as the number of concurrent channels grows.
- * Run with: PERF_TEST=1 pnpm --filter @next-sdr/test-harness test:integration
- */
-
 import { describe, it, beforeAll, afterAll, expect } from 'vitest';
 import { TestHarness, defaultConfig } from '../../apps/test-harness/src';
 

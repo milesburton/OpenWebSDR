@@ -1,7 +1,3 @@
-/**
- * Integration test: tune request and session lifecycle.
- */
-
 import { describe, it, beforeAll, afterEach, expect } from 'vitest';
 import { TestHarness, defaultConfig } from '../../apps/test-harness/src';
 

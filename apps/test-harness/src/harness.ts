@@ -1,8 +1,3 @@
-/**
- * Integration test harness.
- * Provides typed helpers for exercising the live platform stack.
- */
-
 import { waitForAllServices } from './wait';
 
 export interface HarnessConfig {

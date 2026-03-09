@@ -1,8 +1,3 @@
-/**
- * IQ block format.
- * Every IQ block transmitted between services must conform to this format.
- */
-
 export type SampleFormat = 'CS8' | 'CU8' | 'CS16' | 'CF32';
 
 export interface IQBlockFlags {

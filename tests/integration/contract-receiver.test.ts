@@ -1,13 +1,3 @@
-/**
- * Contract tests for receiver backends.
- *
- * These tests verify that both the emulator and (when available) the real
- * RTL-SDR backend satisfy the identical receiver control contract.
- *
- * Run against the emulator backend by default.
- * Set RECEIVER_BACKEND_URL to point at an rtlsdr backend for hardware testing.
- */
-
 import { describe, it, beforeAll, expect } from 'vitest';
 import { ReceiverHttpClient } from '@next-sdr/receiver-sdk';
 

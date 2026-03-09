@@ -1,8 +1,3 @@
-/**
- * In-memory channel store.
- * Tracks all active channels and handles reuse logic.
- */
-
 import { randomUUID } from 'crypto';
 import type { Channel, ChannelDefinition } from '@next-sdr/contracts';
 

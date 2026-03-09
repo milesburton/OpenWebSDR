@@ -1,7 +1,3 @@
-/**
- * HTTP routes for the scheduler service.
- */
-
 import type { FastifyInstance } from 'fastify';
 import type { Scheduler } from './scheduler';
 import type { TuneRequest, LivenessResponse, ReadinessResponse } from '@next-sdr/contracts';

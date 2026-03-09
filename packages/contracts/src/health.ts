@@ -1,8 +1,3 @@
-/**
- * Health check types.
- * All services must expose readiness and liveness endpoints conforming to this contract.
- */
-
 export type HealthStatus = 'ok' | 'degraded' | 'unavailable';
 
 export interface ServiceHealth {

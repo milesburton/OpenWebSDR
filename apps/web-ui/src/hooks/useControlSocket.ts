@@ -1,7 +1,3 @@
-/**
- * Hook for the control WebSocket connection.
- */
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 export interface TuneParams {
