@@ -1,0 +1,36 @@
+app = "next-sdr-receiver-registry"
+primary_region = "lhr"
+
+[build]
+  dockerfile = "docker/images/Dockerfile.receiver-registry"
+  dockerfile_context = "."
+
+[env]
+  HOST       = "0.0.0.0"
+  PORT       = "3001"
+  LOG_LEVEL  = "info"
+  RECEIVER_HEARTBEAT_INTERVAL_MS = "5000"
+  RECEIVER_TIMEOUT_MS            = "15000"
+
+[http_service]
+  internal_port = 3001
+  # Internal only — no public endpoint
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  [http_service.concurrency]
+    type       = "requests"
+    hard_limit = 200
+    soft_limit = 150
+
+[[vm]]
+  size   = "shared-cpu-1x"
+  memory = "256mb"
+
+[checks]
+  [checks.health]
+    type     = "http"
+    port     = 3001
+    path     = "/healthz/live"
+    interval = "10s"
+    timeout  = "3s"

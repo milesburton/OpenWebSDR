@@ -1,0 +1,44 @@
+app = "next-sdr-session-gateway"
+primary_region = "lhr"
+
+[build]
+  dockerfile = "docker/images/Dockerfile.scheduler"
+  dockerfile_context = "."
+  [build.args]
+    SERVICE_CMD = "apps/session-gateway/dist/index.js"
+
+[env]
+  HOST                     = "0.0.0.0"
+  PORT                     = "3004"
+  LOG_LEVEL                = "info"
+  SCHEDULER_URL            = "http://next-sdr-scheduler.internal:3002"
+  MAX_CONNECTIONS_PER_USER = "4"
+  PING_INTERVAL_MS         = "10000"
+  PONG_TIMEOUT_MS          = "5000"
+
+[[services]]
+  internal_port = 3004
+  protocol      = "tcp"
+
+  [[services.ports]]
+    port     = 80
+    handlers = ["http"]
+
+  [[services.ports]]
+    port     = 443
+    handlers = ["tls", "http"]
+
+  # WebSocket connections can be long-lived — generous timeout
+  [services.concurrency]
+    type       = "connections"
+    hard_limit = 500
+    soft_limit = 400
+
+  [[services.http_checks]]
+    path     = "/healthz/live"
+    interval = "10s"
+    timeout  = "3s"
+
+[[vm]]
+  size   = "shared-cpu-1x"
+  memory = "512mb"

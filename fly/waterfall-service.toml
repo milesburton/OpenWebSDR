@@ -1,0 +1,18 @@
+app = "next-sdr-waterfall-service"
+primary_region = "lhr"
+
+[build]
+  dockerfile = "docker/images/Dockerfile.waterfall-service"
+  dockerfile_context = "."
+
+# No public HTTP service — internal only
+[http_service]
+  internal_port = 9101
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[vm]]
+  # FFT is CPU-intensive
+  size   = "shared-cpu-2x"
+  memory = "512mb"

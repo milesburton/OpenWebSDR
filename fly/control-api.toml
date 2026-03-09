@@ -1,0 +1,42 @@
+app = "next-sdr-control-api"
+primary_region = "lhr"
+
+[build]
+  dockerfile = "docker/images/Dockerfile.scheduler"
+  dockerfile_context = "."
+  [build.args]
+    SERVICE_CMD = "apps/control-api/dist/index.js"
+
+[env]
+  HOST               = "0.0.0.0"
+  PORT               = "3000"
+  LOG_LEVEL          = "info"
+  REGISTRY_URL       = "http://next-sdr-receiver-registry.internal:3001"
+  SCHEDULER_URL      = "http://next-sdr-scheduler.internal:3002"
+  WINDOW_ENGINE_URL  = "http://next-sdr-window-engine.internal:3003"
+
+[[services]]
+  internal_port = 3000
+  protocol      = "tcp"
+
+  [[services.ports]]
+    port     = 80
+    handlers = ["http"]
+
+  [[services.ports]]
+    port     = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type       = "requests"
+    hard_limit = 200
+    soft_limit = 150
+
+  [[services.http_checks]]
+    path     = "/healthz/live"
+    interval = "10s"
+    timeout  = "3s"
+
+[[vm]]
+  size   = "shared-cpu-1x"
+  memory = "256mb"

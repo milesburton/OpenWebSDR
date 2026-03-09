@@ -1,0 +1,39 @@
+app = "next-sdr-scheduler"
+primary_region = "lhr"
+
+[build]
+  dockerfile = "docker/images/Dockerfile.scheduler"
+  dockerfile_context = "."
+
+[env]
+  HOST                      = "0.0.0.0"
+  PORT                      = "3002"
+  LOG_LEVEL                 = "info"
+  MAX_UNIQUE_CHANNELS       = "32"
+  MAX_SESSIONS_PER_CHANNEL  = "16"
+  MAX_TOTAL_SESSIONS        = "64"
+  CHANNEL_IDLE_TIMEOUT_MS   = "30000"
+  WATERFALL_QUOTA           = "8"
+  WINDOW_ENGINE_URL         = "http://next-sdr-window-engine.internal:3003"
+
+[http_service]
+  internal_port = 3002
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  [http_service.concurrency]
+    type       = "requests"
+    hard_limit = 200
+    soft_limit = 150
+
+[[vm]]
+  size   = "shared-cpu-1x"
+  memory = "256mb"
+
+[checks]
+  [checks.health]
+    type     = "http"
+    port     = 3002
+    path     = "/healthz/live"
+    interval = "10s"
+    timeout  = "3s"

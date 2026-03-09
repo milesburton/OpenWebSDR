@@ -1,0 +1,38 @@
+app = "next-sdr-window-engine"
+primary_region = "lhr"
+
+[build]
+  dockerfile = "docker/images/Dockerfile.scheduler"
+  dockerfile_context = "."
+  [build.args]
+    SERVICE_CMD = "apps/window-engine/dist/index.js"
+
+[env]
+  HOST                        = "0.0.0.0"
+  PORT                        = "3003"
+  LOG_LEVEL                   = "info"
+  DEFAULT_CENTRE_FREQUENCY_HZ = "145000000"
+  DEFAULT_SAMPLE_RATE_HZ      = "2048000"
+  GUARD_BAND_HZ               = "100000"
+
+[http_service]
+  internal_port = 3003
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  [http_service.concurrency]
+    type       = "requests"
+    hard_limit = 100
+    soft_limit = 80
+
+[[vm]]
+  size   = "shared-cpu-1x"
+  memory = "256mb"
+
+[checks]
+  [checks.health]
+    type     = "http"
+    port     = 3003
+    path     = "/healthz/live"
+    interval = "10s"
+    timeout  = "3s"

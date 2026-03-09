@@ -1,0 +1,32 @@
+app = "next-sdr-web-ui"
+primary_region = "lhr"
+
+[build]
+  dockerfile = "docker/images/Dockerfile.web-ui.fly"
+  dockerfile_context = "."
+
+[[services]]
+  internal_port = 8080
+  protocol      = "tcp"
+
+  [[services.ports]]
+    port     = 80
+    handlers = ["http"]
+
+  [[services.ports]]
+    port     = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type       = "requests"
+    hard_limit = 300
+    soft_limit = 250
+
+  [[services.http_checks]]
+    path     = "/"
+    interval = "15s"
+    timeout  = "5s"
+
+[[vm]]
+  size   = "shared-cpu-1x"
+  memory = "256mb"

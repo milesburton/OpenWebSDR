@@ -1,0 +1,21 @@
+app = "next-sdr-channel-service"
+primary_region = "lhr"
+
+[build]
+  dockerfile = "docker/images/Dockerfile.channel-service"
+  dockerfile_context = "."
+
+[env]
+  SCHEDULER_URL = "http://next-sdr-scheduler.internal:3002"
+
+# No public HTTP service — internal only
+[http_service]
+  internal_port = 9100
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[vm]]
+  # Channel workers are CPU-intensive — use a beefier VM
+  size   = "shared-cpu-2x"
+  memory = "1gb"

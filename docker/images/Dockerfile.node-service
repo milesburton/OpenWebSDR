@@ -1,0 +1,43 @@
+# Generic Dockerfile for TypeScript services.
+# Pass SERVICE_NAME (e.g. "scheduler") and the build system compiles it.
+# Pass SERVICE_CMD (e.g. "apps/scheduler/dist/index.js") for the runtime CMD.
+
+ARG SERVICE_NAME
+ARG SERVICE_CMD
+
+FROM node:20-alpine AS base
+RUN apk add --no-cache dumb-init
+RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
+WORKDIR /app
+
+FROM base AS builder
+ARG SERVICE_NAME
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY tsconfig.base.json ./
+
+# Always need contracts and config
+COPY packages/contracts ./packages/contracts
+COPY packages/config ./packages/config
+
+# Service-specific source (logger shared from receiver-registry)
+COPY apps/${SERVICE_NAME} ./apps/${SERVICE_NAME}
+COPY apps/receiver-registry/src/logger.ts ./apps/receiver-registry/src/logger.ts
+
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter @next-sdr/contracts build
+RUN pnpm --filter @next-sdr/config build
+RUN pnpm --filter @next-sdr/${SERVICE_NAME} build
+
+FROM base AS runner
+ARG SERVICE_CMD
+ENV NODE_ENV=production
+
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages/contracts/dist ./packages/contracts/dist
+COPY --from=builder /app/packages/config/dist ./packages/config/dist
+COPY --from=builder /app/apps ./apps
+
+USER node
+ENTRYPOINT ["dumb-init", "--"]
+CMD node ${SERVICE_CMD}

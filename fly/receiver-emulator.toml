@@ -1,0 +1,37 @@
+app = "next-sdr-receiver-emulator"
+primary_region = "lhr"
+
+[build]
+  dockerfile = "docker/images/Dockerfile.receiver-emulator"
+  dockerfile_context = "."
+
+[env]
+  REGISTRY_URL         = "http://next-sdr-receiver-registry.internal:3001"
+  HOST                 = "0.0.0.0"
+  PORT                 = "8080"
+  SELF_HOST            = "next-sdr-receiver-emulator.internal"
+  CENTRE_FREQUENCY_HZ  = "145000000"
+  SAMPLE_RATE_HZ       = "2048000"
+  SCENARIO_ID          = "single-fm"
+
+[http_service]
+  internal_port = 8080
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  [http_service.concurrency]
+    type       = "requests"
+    hard_limit = 50
+    soft_limit = 40
+
+[[vm]]
+  size   = "shared-cpu-1x"
+  memory = "512mb"
+
+[checks]
+  [checks.health]
+    type     = "http"
+    port     = 8080
+    path     = "/healthz/live"
+    interval = "10s"
+    timeout  = "5s"
